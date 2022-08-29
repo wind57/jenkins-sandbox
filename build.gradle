@@ -1,0 +1,51 @@
+plugins {
+    id 'java'
+    id "io.spring.dependency-management" version '1.0.12.RELEASE'
+    id 'org.springframework.boot' version '2.7.2'
+
+    // needed for Mac with M1 only
+    id 'com.google.osdetector' version "1.7.0"
+}
+
+ext {
+    springBootBomVersion = '2.7.2'
+    junitBomVersion = '5.9.0'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.boot:spring-boot-dependencies:${springBootBomVersion}"
+        mavenBom "org.junit:junit-bom:${junitBomVersion}"
+    }
+}
+
+group 'org.example'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+    // needed for Mac with M1 only
+    if (osdetector.arch.equals("aarch_64")) {
+        implementation("io.netty:netty-all")
+    }
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+}
+
+// otherwise env properties are not bind to the gradle process, and something like:
+// gradle bootRun -DSPRING_MAIN_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENTSECRET
+// would not work
+bootRun {
+    systemProperties = System.properties as Map<String, ?>
+}
+
+test {
+    useJUnitPlatform()
+}
